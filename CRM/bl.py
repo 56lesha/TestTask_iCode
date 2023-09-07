@@ -8,38 +8,55 @@ def create_contract_back(data):
     session.add(contract)
     session.commit()
 
+
 def read_contracts_back():
     return session.query(Contract).all()
 
+def get_contract_by_id(id):
+    contract = session.query(Contract).filter_by(id=id).first()
+    if not contract:
+        raise ValueError("ОШИБКА - Контракт с указанным ID не существует")
+    return contract
 
 def approve_contract_back(id):
     try:
-        contract = session.query(Contract).filter_by(id=id).first()
-        if not contract:
-            raise ValueError("ОШИБКА - Контракт с указанным ID не существует")
+        contract = get_contract_by_id(id)
+        if contract.status == "активен":
+            raise ValueError("ОШИБКА - Данный контракт уже активен")
         contract.status = "активен"
         contract.signed_date = datetime.now()
         session.commit()
+        print(f"Договор с id {id} успешно подтверждён")
     except Exception as e:
         print(f"Произошла ошибка {e}")
+
 
 def complete_contract_back(id):
     try:
-        contract = session.query(Contract).filter_by(id=id).first()
-        if not contract:
-            raise ValueError("ОШИБКА - Контракт с указанным ID не существует")
+        contract = get_contract_by_id(id)
+        if contract.status == "завершён":
+            raise ValueError("ОШИБКА - Данный контракт уже завершён")
         contract.status = "завершён"
         session.commit()
+        print(f"Договор с id {id} успешно завершён")
     except Exception as e:
         print(f"Произошла ошибка {e}")
 
 
-
-
 def create_project_back(data):
-    project = Project(name=data["name"])
-    session.add(project)
-    session.commit()
+    try:
+        active_contract = session.query(Contract).filter_by(status="активен").all()
+        if not data["name"]:
+            raise ValueError("ОШИБКА - название проекта должно иметь хотя бы один символ")
+        if not active_contract:
+            raise ValueError("ОШИБКА - запрещено создавать проект, если в базе не существует активных контрактов")
+        project = Project(name=data["name"])
+        session.add(project)
+        session.commit()
+        print(f"Проект {data['name']} успешно создан")
+    except Exception as e:
+        print(f"Произошла ошибка {e}")
+
 
 def read_projects_back():
     return session.query(Project).all()
@@ -70,17 +87,13 @@ def add_contract_to_project_back(id_project, id_contract):
         if contract_to_add.project_id:
             raise ValueError(f"ОШИБКА - Данный договор уже используется в проекте {contract_to_add.project_id}")
 
-
-
         contract_to_add.project_id = id_project
         session.commit()
+        print(f"Договор №{id_contract} успешно добавлен в проект №{id_project}")
     except Exception as e:
         print(f"Произошла ошибка: {e}")
 
 
-
-
-
-
-
-
+def read_contracts_of_project_back(id_project):
+    contracts = session.query(Project).filter_by(id=id_project).first().contracts
+    return contracts

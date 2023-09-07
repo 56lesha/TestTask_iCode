@@ -1,5 +1,6 @@
 from CRM.bl import create_contract_back, approve_contract_back, complete_contract_back, \
-    read_contracts_back, read_projects_back, create_project_back, add_contract_to_project_back
+    read_contracts_back, read_projects_back, create_project_back, add_contract_to_project_back, \
+    read_contracts_of_project_back
 
 
 def create_contract():
@@ -8,42 +9,41 @@ def create_contract():
     create_contract_back(data_contract)
     print(f"Контракт {data_contract['name']} успешно создан!")
 
+def print_menu(menu_items, space=30):
+    for item in menu_items:
+        print(item.ljust(space), end='')
+    print()
+
 def read_contracts():
     data = read_contracts_back()
     menu = ["ID", "НАЗВАНИЕ", "ДАТА СОЗДАНИЯ", "ДАТА ПОДПИСАНИЯ", "СТАТУС", "PROJECT"]
+    print_menu(menu)
     space = 30
-    for m in menu:
-        print(m.ljust(space), end='')
-    print()
-    for contract in data:
+    for contract in data: # как contract сделать итерируемым объектом
         print(str(contract.id).ljust(space),
               contract.name.ljust(space),
               str(contract.created_at).ljust(space),
               str(contract.signed_date).ljust(space),
               contract.status.ljust(space),
-              str(contract.project).ljust(space))
+              str(contract.project.id).ljust(space))
 
 
 def approve_contract():
     id_contract = int(input("Введите номер договора для подтверждения -->   "))
     approve_contract_back(id_contract)
-    print(f"Договор с id {id_contract} успешно подтверждён")
+
 
 def complete_contract():
     id_contract = int(input("Введите номер договора для завершения -->   "))
     complete_contract_back(id_contract)
-    print(f"Договор с id {id_contract} успешно завершён")
 
 
 
 def read_projects():
     data = read_projects_back()
     menu = ["ID", "НАЗВАНИЕ", "ДАТА СОЗДАНИЯ", "ДОГОВОРЫ"]
-    space = 30
-    for m in menu:
-        print(m.ljust(space), end='')
-    print()
-
+    print_menu(menu)
+    space=30
     for project in data:
         project_contracts = []
         for contract in project.contracts:
@@ -51,15 +51,13 @@ def read_projects():
         print(str(project.id).ljust(space),
               project.name.ljust(space),
               str(project.created_at).ljust(space),
-              project_contracts)
-
-
+              *project_contracts)
 
 def create_project():
     data_project = {}
     data_project["name"] = input("Введите название проекта -->   ")
     create_project_back(data_project)
-    print(f"Проект {data_project['name']} успешно создан")
+
 
 
 def add_contract_to_project():
@@ -73,5 +71,17 @@ def add_contract_to_project():
     add_contract_to_project_back(id_project, id_contract)
 
 
-def complete_contract_from_project():
-    pass
+def read_contracts_of_project():
+    id_project = int(input("Введите id проекта, чтобы подробнее посмотреть его договоры -->   "))
+    contracts_of_project = read_contracts_of_project_back(id_project)
+    menu = ["ID", "НАЗВАНИЕ", "ДАТА СОЗДАНИЯ", "ДАТА ПОДПИСАНИЯ", "СТАТУС", "PROJECT"]
+    print_menu(menu)
+    space = 30
+    for contract in contracts_of_project:
+        print(str(contract.id).ljust(space),
+              contract.name.ljust(space),
+              str(contract.created_at).ljust(space),
+              str(contract.signed_date).ljust(space),
+              contract.status.ljust(space),
+              str(contract.project.id).ljust(space))
+

@@ -9,7 +9,7 @@ DB_PASS = 'postgres'
 DB_HOST = 'localhost'
 DB_NAME = 'crm'
 
-engine = create_engine(f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}", echo=True)
+engine = create_engine(f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}")
 if not database_exists(engine.url):
     create_database(engine.url)
 
