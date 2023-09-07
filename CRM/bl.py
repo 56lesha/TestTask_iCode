@@ -51,8 +51,13 @@ def add_contract_to_project_back(id_project, id_contract):
         if not project:
             raise ValueError("ОШИБКА - Проект с указанным ID не существует")
 
+        active_contract = session.query(Contract).filter_by(project=project, status="активен").first()
+        if active_contract:
+            raise ValueError(f"ОШИБКА - В данном проекте уже существует активный договор {active_contract.name}")
+
         project_contracts = project.contracts
         contract_to_add = session.query(Contract).filter_by(id=id_contract).first()
+
         if not contract_to_add:
             raise ValueError("ОШИБКА - Договор с указанным ID не существует")
 
@@ -64,6 +69,8 @@ def add_contract_to_project_back(id_project, id_contract):
 
         if contract_to_add.project_id:
             raise ValueError(f"ОШИБКА - Данный договор уже используется в проекте {contract_to_add.project_id}")
+
+
 
         contract_to_add.project_id = id_project
         session.commit()
