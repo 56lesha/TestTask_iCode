@@ -5,9 +5,12 @@ from CRM.utils import ManagerMixins
 
 
 class ContractManager(ManagerMixins):
-
+    """
+    Класс для взаимодействия с договорами.
+    Поддерживает просмотр, создание, подтверждение и завершение договоров
+    """
     @staticmethod
-    def __create_contract_back(data):
+    def _create_contract_back(data):
         contract = Contract(name=data["name"])
         session.add(contract)
         session.commit()
@@ -15,20 +18,12 @@ class ContractManager(ManagerMixins):
     @classmethod
     def create_contract(cls):
         data_contract = {}
-        data_contract["name"] = input("Введите название контракта -->   ")
-        cls.__create_contract_back(data_contract)
-        print(f"Контракт {data_contract['name']} успешно создан!")
-
-
-    @staticmethod
-    def get_contract_by_id(id):
-        contract = session.query(Contract).filter_by(id=id).first()
-        if not contract:
-            raise ValueError("ОШИБКА - Контракт с указанным ID не существует")
-        return contract
+        data_contract["name"] = input("Введите название договор -->   ")
+        cls._create_contract_back(data_contract)
+        print(f"Договор {data_contract['name']} успешно создан!")
 
     @classmethod
-    def __approve_contract_back(cls, id):
+    def _approve_contract_back(cls, id):
         try:
             contract = cls.get_contract_by_id(id)
             if contract.status == "активен":
@@ -39,34 +34,27 @@ class ContractManager(ManagerMixins):
             print(f"Договор с id {id} успешно подтверждён")
         except Exception as e:
             print(f"Произошла ошибка {e}")
+
     @classmethod
     def approve_contract(cls):
         cls.read_contracts()
         id_contract = int(input("Введите номер договора для подтверждения -->   "))
-        cls.__approve_contract_back(id_contract)
+        cls._approve_contract_back(id_contract)
 
 
-    @classmethod
-    def __complete_contract_back(cls, id):
-        try:
-            contract = cls.get_contract_by_id(id)
-            if contract.status == "завершён":
-                raise ValueError("ОШИБКА - Данный контракт уже завершён")
-            contract.status = "завершён"
-            session.commit()
-            print(f"Договор с id {id} успешно завершён")
-        except Exception as e:
-            print(f"Произошла ошибка {e}")
-
-    @classmethod
     def complete_contract(cls):
         cls.read_contracts()
-        id_contract = int(input("Введите номер договора для завершения -->   "))
-        cls.__complete_contract_back(id_contract)
+        id_contract = super().complete_contract()
+        cls._complete_contract_back(id_contract)
+
 
 class ProjectManager(ManagerMixins):
+    """
+    Класс для взаимодействия с проектами.
+    Поддерживает создание, просмотр проектов, добавление договора в проект, завершение договора из проекта.
+    """
     @staticmethod
-    def __create_project_back(data):
+    def _create_project_back(data):
         try:
             active_contract = session.query(Contract).filter_by(status="активен").all()
             if not data["name"]:
@@ -84,16 +72,16 @@ class ProjectManager(ManagerMixins):
     def create_project(cls):
         data_project = {}
         data_project["name"] = input("Введите название проекта -->   ")
-        cls.__create_project_back(data_project)
+        cls._create_project_back(data_project)
 
 
     @staticmethod
-    def __read_projects_back():
+    def _read_projects_back():
         return session.query(Project).all()
 
     @classmethod
     def read_projects(cls):
-        data = cls.__read_projects_back()
+        data = cls._read_projects_back()
         menu = ["ID", "НАЗВАНИЕ", "ДАТА СОЗДАНИЯ", "ДОГОВОРЫ"]
         cls.print_menu(menu)
         space = 30
@@ -107,7 +95,7 @@ class ProjectManager(ManagerMixins):
                   *project_contracts)
 
     @staticmethod
-    def __add_contract_to_project_back(id_project, id_contract):
+    def _add_contract_to_project_back(id_project, id_contract):
         try:
             project = session.query(Project).filter_by(id=id_project).first()
             if not project:
@@ -147,17 +135,17 @@ class ProjectManager(ManagerMixins):
         print("Список существующих договоров")
         cls.read_contracts()
         id_contract = int(input("Введите id договора, который будет добавлен в проект -->   "))
-        cls.__add_contract_to_project_back(id_project, id_contract)
+        cls._add_contract_to_project_back(id_project, id_contract)
 
     @staticmethod
-    def __read_contracts_of_project_back(id_project):
+    def _read_contracts_of_project_back(id_project):
         contracts = session.query(Project).filter_by(id=id_project).first().contracts
         return contracts
 
     @classmethod
     def read_contracts_of_project(cls):
         id_project = int(input("Введите id проекта, чтобы подробнее посмотреть его договоры -->   "))
-        contracts_of_project = cls.__read_contracts_of_project_back(id_project)
+        contracts_of_project = cls._read_contracts_of_project_back(id_project)
         menu = ["ID", "НАЗВАНИЕ", "ДАТА СОЗДАНИЯ", "ДАТА ПОДПИСАНИЯ", "СТАТУС", "PROJECT"]
         cls.print_menu(menu)
         space = 30
@@ -168,3 +156,7 @@ class ProjectManager(ManagerMixins):
                   str(contract.signed_date).ljust(space),
                   contract.status.ljust(space),
                   str(contract.project.id).ljust(space))
+    @classmethod
+    def complete_contract(cls):
+        id_contract = super().complete_contract()
+        cls._complete_contract_back(id_contract)
