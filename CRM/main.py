@@ -1,19 +1,18 @@
-from CRM.ui import read_contracts, create_contract, approve_contract, complete_contract, read_projects, create_project, \
-    add_contract_to_project, read_contracts_of_project
+from CRM.bl import ContractManager, ProjectManager
 
 
 def main():
     menu = {
         1: {
-            1: read_projects,
-            2: create_project,
-            3: add_contract_to_project,
+            1: ProjectManager.read_projects,
+            2: ProjectManager.create_project,
+            3: ProjectManager.add_contract_to_project,
         },
         2: {
-            1: read_contracts,
-            2: create_contract,
-            3: approve_contract,
-            4: complete_contract,
+            1: ContractManager.read_contracts,
+            2: ContractManager.create_contract,
+            3: ContractManager.approve_contract,
+            4: ContractManager.complete_contract,
         },
     }
     while True:
@@ -39,14 +38,14 @@ def main():
                 if choice in choices:
                     if choice == 1 and choice_cat == 1:
                         while True:
-                            read_projects()
-                            read_contracts_of_project()
+                            ProjectManager.read_projects()
+                            ProjectManager.read_contracts_of_project()
                             choice = int(input(f"Выберите, что вы хотите сделать с отображёнными договорами \n" 
                                                "1 - Завершить договор \n"
                                                "0 - НАЗАД \n"
                                                ))
                             if choice == 1:
-                                complete_contract()
+                                ContractManager.complete_contract()
                             elif choice == 0:
                                 break
 
