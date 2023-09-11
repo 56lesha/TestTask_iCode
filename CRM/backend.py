@@ -139,8 +139,12 @@ class ProjectManager(ManagerMixins):
 
     @staticmethod
     def _read_contracts_of_project_back(id_project):
-        contracts = session.query(Project).filter_by(id=id_project).first().contracts
-        return contracts
+        try:
+            contracts = session.query(Project).filter_by(id=id_project).first().contracts
+            return contracts
+        except AttributeError:
+            return []
+
 
     @classmethod
     def read_contracts_of_project(cls):
