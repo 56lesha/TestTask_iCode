@@ -1,13 +1,23 @@
+
 from datetime import datetime
 
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 from sqlalchemy_utils import database_exists, create_database
+import os
+from os.path import join, dirname
+from dotenv import load_dotenv
 
-DB_USER = 'postgres'
-DB_PASS = 'postgres'
-DB_HOST = 'localhost'
-DB_NAME = 'crm'
+
+
+dotenv_path = join(dirname(__file__), '../db_keys.env')
+load_dotenv(dotenv_path)
+
+
+DB_USER = os.getenv("DB_USER")
+DB_PASS = os.getenv("DB_PASS")
+DB_HOST = os.getenv("DB_HOST")
+DB_NAME = os.getenv("DB_NAME")
 
 engine = create_engine(f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}")
 if not database_exists(engine.url):
